@@ -1,0 +1,13 @@
+**/*.md
+**/*.svg
+**/*.ejs
+**/*.html
+deploy/
+upload/
+run/
+node_modules/
+logs/
+package.json
+package-lock.json
+.umi
+.umi-production

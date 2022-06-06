@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    // "importHelpers": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": "./",
+    "outDir": "./lib",
+    "declaration": true,
+    "strict": true,
+    "allowJs": true,
+    "checkJs": false,
+    "skipLibCheck": true,
+    "paths": {
+      "@solana/spl-token": ["node_modules/@solana/spl-token"]
+    },
+    "lib": ["ES2018.AsyncGenerator"]
+  },
+  "include": ["jest.config.js",".fatherrc.ts","src/**/*","test/**/*"],
+  "exclude": ["node_modules", "**/node_modules/*", "lib/", "es/", "dist/","build/", "docs"]
+}
