@@ -12,7 +12,9 @@
     "readme.md"
   ],
   "scripts": {
-    "test": "jest ./test"
+    "build": "father-build",
+    "test": "jest ./test",
+    "publish": "npm run test & npm run build & npm publish"
   },
   "author": "KM7 <tlyspa@gmail.com>",
   "license": "MIT",
