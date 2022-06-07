@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ESNext",
     "module": "CommonJS",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -16,10 +16,9 @@
     "checkJs": false,
     "skipLibCheck": true,
     "paths": {
-      "@solana/spl-token": ["node_modules/@solana/spl-token"]
+      "@solana/spl-token": ["node_modules/@solana/spl-token"] // @metaflex/js has a much lower version reference
     },
-    "lib": ["ES2018.AsyncGenerator"]
   },
-  "include": ["jest.config.js",".fatherrc.ts","src/**/*","test/**/*"],
+  "include": ["jest.config.js",".fatherrc.ts","src/**/*","test/**/*","readme.md"],
   "exclude": ["node_modules", "**/node_modules/*", "lib/", "es/", "dist/","build/", "docs"]
 }

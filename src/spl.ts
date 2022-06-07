@@ -1,4 +1,10 @@
 import { PublicKey, Keypair, Connection, Transaction } from '@solana/web3.js';
+import {
+  getAccount,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+  AccountLayout,
+} from '@solana/spl-token';
 
 import {
   getCreateMintTx,
@@ -42,7 +48,7 @@ export const create = async (
   );
   return {
     mint: token_keypair.publicKey.toBase58(),
-    signature: encodedSignature,
+    encodedSignature,
   };
 };
 
@@ -163,4 +169,48 @@ export const burn = async (
     `SPL Burn: signature=${encodedSignature} mint=${mint.toBase58()} source=${source.publicKey.toBase58()} amount=${amount.toString()}`,
   );
   return encodedSignature;
+};
+
+/**
+ *
+ * @param connection
+ * @param mint mint address
+ * @param address normal address. not associated address
+ * @returns
+ */
+export const getBalance = async (
+  connection: Connection,
+  mint: PublicKey,
+  address: PublicKey,
+) => {
+  // await getAccount(connection);
+  let amount = BigInt(0);
+  const associatedTokenAddress = await getAssociatedTokenAddress(mint, address);
+  try {
+    const account = await getAccount(connection, associatedTokenAddress);
+    amount = account.amount;
+  } catch (error: unknown) {
+    console.log(error);
+  }
+  return amount;
+};
+
+export const getAllTokenBalance = async (
+  connection: Connection,
+  owner: PublicKey,
+) => {
+  const res: Record<string, bigint> = {};
+  const tokenAccounts = await connection.getTokenAccountsByOwner(owner, {
+    programId: TOKEN_PROGRAM_ID,
+  });
+
+  console.log('Token   Balance');
+  console.log('------------------------------------------------------------');
+  tokenAccounts.value.forEach(e => {
+    const accountInfo = AccountLayout.decode(e.account.data);
+    console.log(`${new PublicKey(accountInfo.mint)}   ${accountInfo.amount}`);
+    res[accountInfo.mint.toBase58()] = accountInfo.amount;
+  });
+
+  return res;
 };

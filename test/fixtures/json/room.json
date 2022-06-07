@@ -1,0 +1,53 @@
+{
+  "name": "Room Test #1",
+  "symbol": "",
+  "description": "NFT Room, use it in ZCLUB to talk2earn",
+  "seller_fee_basis_points": 400,
+  "image": "https://zclub.app/static/img_head_1.b266a71b.svg",
+  "external_url": "https://zclub.app",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://zclub.app/static/img_head_1.b266a71b.svg",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "ZCLUB6ueX9iALVEeNPVWQyrgTqvWAHcxozJP2ea2YcC",
+        "share": 100
+      }
+    ]
+  },
+  "attributes": [
+    {
+      "trait_type": "Room quality",
+      "value": "Common"
+    },
+    {
+      "trait_type": "Level",
+      "value": "19"
+    },
+    {
+      "trait_type": "Efficiency",
+      "value": "54.9"
+    },
+    {
+      "trait_type": "Luck",
+      "value": "16.3"
+    },
+    {
+      "trait_type": "Comfortability",
+      "value": "2.5"
+    },
+    {
+      "trait_type": "Resilience",
+      "value": "18.9"
+    },
+    {
+      "trait_type": "Durability",
+      "value": "100/100"
+    }
+  ]
+}

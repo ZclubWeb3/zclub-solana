@@ -17,7 +17,8 @@
     "plugin:import/errors",
     "plugin:import/warnings",
     "plugin:import/typescript",
-    "prettier"
+    "prettier",
+    "plugin:markdown/recommended"
   ],
   "rules": {
     "no-unused-vars": "warn",
@@ -47,5 +48,6 @@
   },
   "parserOptions": {
     "project": "./tsconfig.json"
-  }
+  },
+  "globals": {"BigInt":true}
 }

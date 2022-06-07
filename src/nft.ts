@@ -37,7 +37,7 @@ export const mint = async (
   console.log(
     `NFT Mint: signature=${encodedSignature} mint=${mint.publicKey.toBase58()} destination=${destination.toBase58()}`,
   );
-  return { mint: mint.publicKey.toBase58(), signature: encodedSignature };
+  return { mint: mint.publicKey.toBase58(), encodedSignature };
 };
 
 /**

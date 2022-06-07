@@ -1,0 +1,85 @@
+{
+  "name": "Chair Test #1",
+  "symbol": "",
+  "description": "NFT Chair, use it in ZCLUB to talk2earn",
+  "seller_fee_basis_points": 400,
+  "image": "https://zclub.app/static/img_token_earnning.7fef9eb4.svg",
+  "external_url": "https://zclub.app",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://zclub.app/static/img_token_earnning.7fef9eb4.svg",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "ZCLUB6ueX9iALVEeNPVWQyrgTqvWAHcxozJP2ea2YcC",
+        "share": 100
+      }
+    ]
+  },
+  "attributes": [
+    {
+      "trait_type": "Chair type",
+      "value": "Guest Seats"
+    },
+    {
+      "trait_type": "Chair quality",
+      "value": "Common"
+    },
+    {
+      "trait_type": "Level",
+      "value": "19"
+    },
+    {
+      "trait_type": "Privilege",
+      "value": "On/off Seat  On/off Mic"
+    },
+    {
+      "trait_type": "Chair-minting Count",
+      "value": "0/9"
+    },
+    {
+      "trait_type": "Efficiency",
+      "value": "54.9"
+    },
+    {
+      "trait_type": "Luck",
+      "value": "16.3"
+    },
+    {
+      "trait_type": "Comfortability",
+      "value": "2.5"
+    },
+    {
+      "trait_type": "Resilience",
+      "value": "18.9"
+    },
+    {
+      "trait_type": "Durability",
+      "value": "100/100"
+    },
+    {
+      "trait_type": "Socket 1",
+      "value": "Durability/unknown/empty"
+    },
+    {
+      "trait_type": "Socket 2",
+      "value": "Efficiency/unknown/empty"
+    },
+    {
+      "trait_type": "Socket 3",
+      "value": "Luck/unknown/empty"
+    },
+    {
+      "trait_type": "Socket 4",
+      "value": "Comfort/unknown/empty"
+    },
+    {
+      "trait_type": "Socket 5",
+      "value": "Economic/unknown/empty"
+    }
+  ]
+}

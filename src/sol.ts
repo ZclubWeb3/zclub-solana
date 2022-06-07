@@ -29,3 +29,16 @@ export const transfer = async (
   );
   return encodedSignature;
 };
+
+/**
+ * Get SOL balance
+ * @param connection
+ * @param address
+ * @returns 1 lamport = 0.000000001SOL
+ */
+export const getBalance = async (
+  connection: Connection,
+  address: PublicKey,
+) => {
+  return BigInt(await connection.getBalance(address));
+};
