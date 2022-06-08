@@ -18,7 +18,7 @@ describe('SOL TEST', () => {
 
   test('query amount', async () => {
     const balance = await SOL.getBalance(connection, keypair1.publicKey);
-    expect(balance).toEqual(Web3.LAMPORTS_PER_SOL);
+    expect(balance).toEqual(BigInt(Web3.LAMPORTS_PER_SOL));
   });
 
   test('transfer', async () => {

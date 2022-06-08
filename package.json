@@ -13,8 +13,7 @@
   ],
   "scripts": {
     "build": "father-build",
-    "test": "jest ./test",
-    "publish": "npm run test & npm run build & npm publish"
+    "test": "jest --maxWorkers=1 ./test"
   },
   "author": "KM7 <tlyspa@gmail.com>",
   "license": "MIT",

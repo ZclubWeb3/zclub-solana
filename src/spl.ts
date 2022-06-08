@@ -204,11 +204,9 @@ export const getAllTokenBalance = async (
     programId: TOKEN_PROGRAM_ID,
   });
 
-  console.log('Token   Balance');
-  console.log('------------------------------------------------------------');
   tokenAccounts.value.forEach(e => {
     const accountInfo = AccountLayout.decode(e.account.data);
-    console.log(`${new PublicKey(accountInfo.mint)}   ${accountInfo.amount}`);
+    // console.log(`${new PublicKey(accountInfo.mint)}   ${accountInfo.amount}`);
     res[accountInfo.mint.toBase58()] = accountInfo.amount;
   });
 
