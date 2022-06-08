@@ -1,4 +1,3 @@
-import express from 'express';
 import * as Web3 from '@solana/web3.js';
 import BN from 'bn.js';
 import { TOKEN_PROGRAM_ID, getMint } from '@solana/spl-token';
@@ -49,6 +48,7 @@ describe('SPL TEST', () => {
       keypair1,
       keypair1,
       mint1_address,
+      keypair1.publicKey,
       supply,
     );
     await connection.confirmTransaction(
