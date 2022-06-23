@@ -1,4 +1,8 @@
 import { PublicKey, Keypair, Connection, Transaction } from '@solana/web3.js';
+import {
+  Metadata,
+  MetadataDataData,
+} from '@metaplex-foundation/mpl-token-metadata';
 
 import {
   getSPLTransferTxs,
@@ -328,3 +332,5 @@ export const batchBurn = async (
   }
   return encodedSignature;
 };
+
+export const getMataData = (connection: Connection) => {};
