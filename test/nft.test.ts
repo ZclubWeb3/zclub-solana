@@ -114,7 +114,7 @@ describe('NFT TEST', () => {
       keypair2.publicKey,
     );
     await connection.confirmTransaction(
-      await connection.sendEncodedTransaction(encodedTx),
+      await connection.sendEncodedTransaction(encodedTx.encodedSignature),
     );
     expect(
       await SPL.getBalance(
@@ -166,7 +166,7 @@ describe('NFT TEST', () => {
       },
     ]);
     await connection.confirmTransaction(
-      await connection.sendEncodedTransaction(encodedTx),
+      await connection.sendEncodedTransaction(encodedTx.encodedSignature),
     );
     const allTokenInfo = await SPL.getAllTokenBalance(
       connection,
@@ -196,7 +196,7 @@ describe('NFT TEST', () => {
       mint_chair_address_batch_test1,
     );
     await connection.confirmTransaction(
-      await connection.sendEncodedTransaction(encodedTx),
+      await connection.sendEncodedTransaction(encodedTx.encodedSignature),
     );
     expect(
       await SPL.getBalance(
@@ -235,7 +235,7 @@ describe('NFT TEST', () => {
       },
     ]);
     await connection.confirmTransaction(
-      await connection.sendEncodedTransaction(encodedTx),
+      await connection.sendEncodedTransaction(encodedTx.encodedSignature),
     );
     const allTokenInfo = await SPL.getAllTokenBalance(
       connection,

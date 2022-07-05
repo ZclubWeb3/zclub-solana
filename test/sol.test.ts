@@ -27,7 +27,9 @@ describe('SOL TEST', () => {
         keypair2.publicKey,
         BigInt(Web3.LAMPORTS_PER_SOL / 2),
       );
-      const signature = await connection.sendEncodedTransaction(encodedTx);
+      const signature = await connection.sendEncodedTransaction(
+        encodedTx.encodedSignature,
+      );
       await connection.confirmTransaction(signature);
     } catch (e) {
       console.log('transfer fail', e);
@@ -54,7 +56,7 @@ describe('SOL TEST', () => {
       },
     ]);
     await connection.confirmTransaction(
-      await connection.sendEncodedTransaction(encodedTx),
+      await connection.sendEncodedTransaction(encodedTx.encodedSignature),
     );
     expect(await SOL.getBalance(connection, keypair3.publicKey)).toEqual(
       BigInt(Web3.LAMPORTS_PER_SOL / 2),

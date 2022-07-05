@@ -38,14 +38,15 @@ export const signAndEncodeTransaction = async (
   connection: Connection,
   txs: Array<Transaction>,
   signers: Array<Signer>,
-): Promise<TransactionSignature> => {
+) => {
+  let latestBlockInfo;
   const transaction = getCombinedTransaction(txs);
   if (transaction.nonceInfo) {
     transaction.sign(...signers);
   } else {
-    const latestBlockhash = await connection.getLatestBlockhash();
-    transaction.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight;
-    transaction.recentBlockhash = latestBlockhash.blockhash;
+    latestBlockInfo = await connection.getLatestBlockhash();
+    transaction.lastValidBlockHeight = latestBlockInfo.lastValidBlockHeight;
+    transaction.recentBlockhash = latestBlockInfo.blockhash;
     transaction.sign(...signers);
     if (!transaction.signature) {
       throw new Error('!signature'); // should never happen
@@ -55,5 +56,5 @@ export const signAndEncodeTransaction = async (
     'base64',
   );
 
-  return encodedTransaction;
+  return { encodedSignature: encodedTransaction, latestBlockInfo };
 };

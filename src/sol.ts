@@ -43,7 +43,7 @@ export const transfer = async (
   destination: PublicKey,
   amount: number | bigint,
 ) => {
-  const encodedSignature = await batchTransfer(
+  const encodeTx = await batchTransfer(
     connection,
     [
       {
@@ -56,9 +56,11 @@ export const transfer = async (
     false,
   );
   console.log(
-    `SOL Transfer: signature=${encodedSignature} source=${source.publicKey.toBase58()} destination=${destination.toBase58()} amount=${amount.toString()}`,
+    `SOL Transfer: signature=${
+      encodeTx.encodedSignature
+    } source=${source.publicKey.toBase58()} destination=${destination.toBase58()} amount=${amount.toString()}`,
   );
-  return encodedSignature;
+  return encodeTx;
 };
 
 /**
@@ -94,16 +96,16 @@ export const batchTransfer = async (
     txList.push(...txs);
     signerList.push(...signers);
   }
-  const encodedSignature = await signAndEncodeTransaction(
+  const encodeTx = await signAndEncodeTransaction(
     connection,
     txList,
     signerList,
   );
   if (showLog) {
-    console.log(`SOL Batch Transfer: signature=${encodedSignature}`);
+    console.log(`SOL Batch Transfer: signature=${encodeTx.encodedSignature}`);
   }
 
-  return encodedSignature;
+  return encodeTx;
 };
 
 // ==========================================================================

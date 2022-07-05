@@ -41,18 +41,20 @@ export const create = async (
     9,
     token_keypair,
   );
-  const encodedSignature = await signAndEncodeTransaction(
+  const encodeTx = await signAndEncodeTransaction(
     connection,
     [createMintTx],
     [payer, token_keypair],
   );
 
   console.log(
-    `SPL Create: signature=${encodedSignature} mint=${token_keypair.publicKey.toBase58()}`,
+    `SPL Create: signature=${
+      encodeTx.encodedSignature
+    } mint=${token_keypair.publicKey.toBase58()}`,
   );
   return {
     mint: token_keypair.publicKey.toBase58(),
-    encodedSignature,
+    ...encodeTx,
   };
 };
 
@@ -126,15 +128,13 @@ export const mint = async (
     destination,
     amount,
   );
-  const encodedSignature = await signAndEncodeTransaction(
-    connection,
-    txs,
-    signers,
-  );
+  const encodeTx = await signAndEncodeTransaction(connection, txs, signers);
   console.log(
-    `SPL Mint: signature=${encodedSignature} mint=${mint.toBase58()} amount=${amount.toString()}`,
+    `SPL Mint: signature=${
+      encodeTx.encodedSignature
+    } mint=${mint.toBase58()} amount=${amount.toString()}`,
   );
-  return encodedSignature;
+  return encodeTx;
 };
 
 // ==========================================================================
@@ -191,7 +191,7 @@ export const transfer = async (
   destination: PublicKey,
   amount: bigint,
 ) => {
-  const encodedSignature = await batchTransfer(
+  const encodeTx = await batchTransfer(
     connection,
     [
       {
@@ -205,10 +205,12 @@ export const transfer = async (
     false,
   );
   console.log(
-    `SPL Transfer: signature=${encodedSignature} mint=${mint.toBase58()} source=${source.publicKey.toBase58()} destination=${destination.toBase58()}`,
+    `SPL Transfer: signature=${
+      encodeTx.encodedSignature
+    } mint=${mint.toBase58()} source=${source.publicKey.toBase58()} destination=${destination.toBase58()}`,
   );
 
-  return encodedSignature;
+  return encodeTx;
 };
 
 /**
@@ -248,15 +250,15 @@ export const batchTransfer = async (
     txList.push(...txs);
     signerList.push(...signers);
   }
-  const encodedSignature = await signAndEncodeTransaction(
+  const encodeTx = await signAndEncodeTransaction(
     connection,
     txList,
     signerList,
   );
   if (showLog) {
-    console.log(`SPL Batch Transfer: signature=${encodedSignature}`);
+    console.log(`SPL Batch Transfer: signature=${encodeTx.encodedSignature}`);
   }
-  return encodedSignature;
+  return encodeTx;
 };
 
 // ==========================================================================
@@ -309,7 +311,7 @@ export const burn = async (
   mint: PublicKey,
   amount: bigint,
 ) => {
-  const encodedSignature = await batchBurn(
+  const encodeTx = await batchBurn(
     connection,
     [
       {
@@ -322,9 +324,11 @@ export const burn = async (
     false,
   );
   console.log(
-    `SPL Burn: signature=${encodedSignature} mint=${mint.toBase58()} source=${source.publicKey.toBase58()} amount=${amount.toString()}`,
+    `SPL Burn: signature=${
+      encodeTx.encodedSignature
+    } mint=${mint.toBase58()} source=${source.publicKey.toBase58()} amount=${amount.toString()}`,
   );
-  return encodedSignature;
+  return encodeTx;
 };
 
 /**
@@ -357,15 +361,15 @@ export const batchBurn = async (
     signerList.push(...signers);
   }
   // signature transactions
-  const encodedSignature = await signAndEncodeTransaction(
+  const encodeTx = await signAndEncodeTransaction(
     connection,
     txList,
     signerList,
   );
   if (showLog) {
-    console.log(`SPL Batch Burn: signature=${encodedSignature}`);
+    console.log(`SPL Batch Burn: signature=${encodeTx.encodedSignature}`);
   }
-  return encodedSignature;
+  return encodeTx;
 };
 
 // ==========================================================================
