@@ -20,11 +20,14 @@ describe('SPL TEST', () => {
   });
 
   test('create', async () => {
-    const { encodedSignature, mint } = await SPL.create(
+    const { encodedSignature, mint, latestBlockInfo } = await SPL.create(
       connection,
       keypair1,
       keypair1,
     );
+
+    expect(latestBlockInfo?.blockhash).toBeDefined();
+    expect(latestBlockInfo?.lastValidBlockHeight).toBeDefined();
 
     await connection.confirmTransaction(
       await connection.sendEncodedTransaction(encodedSignature),
@@ -41,6 +44,7 @@ describe('SPL TEST', () => {
     expect(mintInfo.decimals).toEqual(9);
     expect(mintInfo.mintAuthority).toEqual(keypair1.publicKey);
   });
+
   test('mint1', async () => {
     const supply = BigInt(new BN('1000').mul(new BN('1000000000')).toString());
     const encodedTx = await SPL.mint(
@@ -52,7 +56,7 @@ describe('SPL TEST', () => {
       supply,
     );
     await connection.confirmTransaction(
-      await connection.sendEncodedTransaction(encodedTx),
+      await connection.sendEncodedTransaction(encodedTx.encodedSignature),
     );
 
     const mintInfo = await getMint(connection, mint1_address);
@@ -85,7 +89,7 @@ describe('SPL TEST', () => {
       amount,
     );
     await connection.confirmTransaction(
-      await connection.sendEncodedTransaction(encodedTx),
+      await connection.sendEncodedTransaction(encodedTx.encodedSignature),
     );
     const balance2 = await SPL.getBalance(
       connection,
@@ -113,7 +117,7 @@ describe('SPL TEST', () => {
       amount,
     );
     await connection.confirmTransaction(
-      await connection.sendEncodedTransaction(encodedTx),
+      await connection.sendEncodedTransaction(encodedTx.encodedSignature),
     );
     const balance2 = await SPL.getBalance(
       connection,

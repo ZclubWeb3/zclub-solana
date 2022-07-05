@@ -59,15 +59,13 @@ export const mint = async (
     destination,
     uri,
   );
-  const encodedSignature = await signAndEncodeTransaction(
-    connection,
-    txs,
-    signers,
-  );
+  const encodedTx = await signAndEncodeTransaction(connection, txs, signers);
   console.log(
-    `NFT Mint: signature=${encodedSignature} mint=${mint.publicKey.toBase58()} destination=${destination.toBase58()}`,
+    `NFT Mint: signature=${
+      encodedTx.encodedSignature
+    } mint=${mint.publicKey.toBase58()} destination=${destination.toBase58()}`,
   );
-  return { mint: mint.publicKey, encodedSignature };
+  return { mint: mint.publicKey, ...encodedTx };
 };
 
 /**
@@ -102,16 +100,16 @@ export const batchMint = async (
   }
 
   // 2. combine and encode transaction
-  const encodedSignature = await signAndEncodeTransaction(
+  const encodedTx = await signAndEncodeTransaction(
     connection,
     txList,
     signerList,
   );
   if (showLog) {
-    console.log(`NFT Batch Mint: signature=${encodedSignature} }`);
+    console.log(`NFT Batch Mint: signature=${encodedTx.encodedSignature} }`);
   }
 
-  return { mint: mintList, encodedSignature };
+  return { mint: mintList, ...encodedTx };
 };
 
 // ==========================================================================
@@ -164,7 +162,7 @@ export const transfer = async (
   mint: PublicKey,
   destination: PublicKey,
 ) => {
-  const encodedSignature = await batchTransfer(
+  const encodedTx = await batchTransfer(
     connection,
     [
       {
@@ -178,9 +176,11 @@ export const transfer = async (
   );
 
   console.log(
-    `NFT Transfer: signature=${encodedSignature} mint=${mint.toBase58()} source=${source.publicKey.toBase58()} destination=${destination.toBase58()}`,
+    `NFT Transfer: signature=${
+      encodedTx.encodedSignature
+    } mint=${mint.toBase58()} source=${source.publicKey.toBase58()} destination=${destination.toBase58()}`,
   );
-  return encodedSignature;
+  return encodedTx;
 };
 
 /**
@@ -218,16 +218,16 @@ export const batchTransfer = async (
     signerList.push(...signers);
   }
 
-  const encodedSignature = await signAndEncodeTransaction(
+  const encodedTx = await signAndEncodeTransaction(
     connection,
     txList,
     signerList,
   );
   if (showLog) {
-    console.log(`NFT Batch Transfer: signature=${encodedSignature}`);
+    console.log(`NFT Batch Transfer: signature=${encodedTx.encodedSignature}`);
   }
 
-  return encodedSignature;
+  return encodedTx;
 };
 
 // ==========================================================================
@@ -322,15 +322,15 @@ export const batchBurn = async (
   }
 
   // signature transactions
-  const encodedSignature = await signAndEncodeTransaction(
+  const encodedTx = await signAndEncodeTransaction(
     connection,
     txList,
     signerList,
   );
   if (showLog) {
-    console.log(`NFT Batch Burn: signature=${encodedSignature}`);
+    console.log(`NFT Batch Burn: signature=${encodedTx.encodedSignature}`);
   }
-  return encodedSignature;
+  return encodedTx;
 };
 
 export const getMataData = (connection: Connection) => {};
