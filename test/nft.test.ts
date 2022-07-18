@@ -1,53 +1,39 @@
 import * as Web3 from '@solana/web3.js';
-import express from 'express';
-import http from 'http';
 
-import { NFT, SPL, signAndEncodeTransaction } from '../src';
-import JsonChair from './fixtures/json/chair.json';
-import JsonChairCollection from './fixtures/json/chair_collection.json';
-import { requestAirdrop, sleep } from './util';
-const mockServer = (creater: Web3.PublicKey) => {
-  const app = express();
-  const port = 3000;
+import { NFT, SPL, signAndEncodeTransaction, MetadataJson } from '../src';
+import { requestAirdrop } from './util';
 
-  app.get('/api/jsonchair_collection', (req, res) => {
-    JsonChairCollection.properties.creators = [
+const getMetadata = (creatorAddress: string, collectionAddress?: string) => {
+  return {
+    name: collectionAddress
+      ? `Chair Dev #${Math.floor(Math.random() * 100)}`
+      : 'Chair Collection',
+    symbol: '',
+    uri: '',
+    sellerFeeBasisPoints: 400,
+    creators: [
       {
-        address: creater.toBase58(),
         share: 100,
+        address: creatorAddress,
       },
-    ];
-    res.json(JsonChairCollection);
-  });
-
-  app.get('/api/jsonchair', (req, res) => {
-    JsonChair.properties.creators = [
-      {
-        address: creater.toBase58(),
-        share: 100,
-      },
-    ];
-    res.json(JsonChair);
-  });
-
-  const server = app.listen(port, () => {
-    console.log(`mock app listening on port ${port}`);
-  });
-
-  return server;
+    ],
+    collection: collectionAddress
+      ? { key: collectionAddress, verified: false }
+      : undefined,
+  } as MetadataJson;
 };
 
 const mintANFT = async (
   connection: Web3.Connection,
   keypair: Web3.Keypair,
-  collectionKey?: Web3.PublicKey,
+  metaJSON: MetadataJson,
 ) => {
   const { encodedSignature, mint } = await NFT.mint(
     connection,
     keypair,
     keypair.publicKey,
-    `http://127.0.0.1:3000/api/jsonchair${collectionKey ? '' : '_collection'}`,
-    collectionKey,
+    metaJSON,
+    Web3.Keypair.generate(),
   );
   await connection.confirmTransaction(
     await connection.sendEncodedTransaction(encodedSignature),
@@ -55,7 +41,6 @@ const mintANFT = async (
   return mint;
 };
 describe('NFT TEST', () => {
-  let server: http.Server;
   let connection: Web3.Connection;
 
   let collection_chair_address: Web3.PublicKey;
@@ -73,12 +58,15 @@ describe('NFT TEST', () => {
     // nft can be only test on the public network. because localhost network has no metadata relevant programId
     connection = new Web3.Connection(Web3.clusterApiUrl('devnet'), 'confirmed');
     await requestAirdrop(connection, keypair1.publicKey, 1);
-    server = mockServer(keypair1.publicKey);
   });
 
   test('mint collection NFT', async () => {
     console.log(keypair1.publicKey.toBase58());
-    collection_chair_address = await mintANFT(connection, keypair1);
+    collection_chair_address = await mintANFT(
+      connection,
+      keypair1,
+      getMetadata(keypair1.publicKey.toBase58()),
+    );
 
     console.log(collection_chair_address.toBase58());
   });
@@ -87,7 +75,11 @@ describe('NFT TEST', () => {
     mint_chair_address_batch_test1 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     expect(
       await SPL.getBalance(
@@ -109,27 +101,42 @@ describe('NFT TEST', () => {
     mint_chair_address_batch_test2 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     mint_chair_address_batch_test3 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     mint_chair_address_batch_test4 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     mint_chair_address_batch_test5 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     mint_chair_address_batch_test6 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     expect(
       await SPL.getBalance(
@@ -314,32 +321,50 @@ describe('NFT TEST', () => {
     mint_chair_address_batch_test1 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     mint_chair_address_batch_test2 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     mint_chair_address_batch_test3 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     mint_chair_address_batch_test4 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     mint_chair_address_batch_test5 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
     mint_chair_address_batch_test6 = await mintANFT(
       connection,
       keypair1,
-      collection_chair_address,
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
     );
 
     const burnList = [
@@ -392,7 +417,11 @@ describe('NFT TEST', () => {
       connection,
       keypair1,
       keypair1.publicKey,
-      'http://127.0.0.1:3000/api/jsonchair',
+      getMetadata(
+        keypair1.publicKey.toBase58(),
+        collection_chair_address.toBase58(),
+      ),
+      Web3.Keypair.generate(),
     );
     txList.push(...txs);
     signerList.push(...signers);
@@ -406,9 +435,5 @@ describe('NFT TEST', () => {
       };
       expect(t).toThrowError(/Transaction too large/);
     }
-  });
-
-  afterAll(() => {
-    server.close();
   });
 });
