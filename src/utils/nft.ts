@@ -16,14 +16,26 @@ import {
 } from '@metaplex-foundation/mpl-token-metadata';
 import {
   findMetadataPda,
-  findEditionPda,
   findMasterEditionV2Pda,
 } from '@metaplex-foundation/js';
-import { config } from '@metaplex-foundation/mpl-core';
-import { MetaplexProgram } from '@metaplex-foundation/mpl-metaplex';
 
-import { lookup } from '../adaptor/metaplex';
 import { getCreateMintTx, getMintToTx } from './public';
+
+// metadata, see: https://docs.metaplex.com/programs/token-metadata/accounts#metadata
+export declare type MetadataJson = {
+  name: string;
+  symbol: string;
+  uri: string;
+  sellerFeeBasisPoints: number;
+  creators: {
+    address: string;
+    share: number;
+  }[];
+  collection?: {
+    verified: boolean;
+    key: string;
+  };
+};
 
 export interface MintNFTParams {
   connection: Connection;
@@ -40,8 +52,6 @@ export interface MintNFTResponse {
 }
 
 interface MintTxs {
-  mint: Keypair;
-  // recipient ATA
   recipient: PublicKey;
   createMintTx: Transaction;
   createAssociatedTokenAccountTx: Transaction;
@@ -52,8 +62,8 @@ export const prepareTokenAccountAndMintTxs = async (
   connection: Connection,
   owner: PublicKey,
   payer: Keypair,
+  mint: Keypair,
 ): Promise<MintTxs> => {
-  const mint = Keypair.generate();
   const createMintTx = await getCreateMintTx(
     connection,
     payer,
@@ -73,7 +83,6 @@ export const prepareTokenAccountAndMintTxs = async (
   );
   const mintToTx = getMintToTx(mint.publicKey, recipient, owner, 1);
   return {
-    mint,
     createMintTx,
     createAssociatedTokenAccountTx,
     mintToTx,
@@ -86,30 +95,25 @@ export const prepareTokenAccountAndMintTxs = async (
  * @param connection
  * @param payer tx payer
  * @param owner nft owenr
- * @param uri the uri of the metadata
- * @param collectionKey the collection mint of this nft.
+ * @param metaJSON metadata
  * @returns
  */
 export const getNFTMintTxs = async (
   connection: Connection,
   payer: Keypair,
   owner: PublicKey,
-  uri: string,
-  collectionKey?: PublicKey,
+  metaJSON: MetadataJson,
+  mint: Keypair,
 ) => {
   const txs: Transaction[] = [];
-  const { mint, createMintTx, createAssociatedTokenAccountTx, mintToTx } =
-    await prepareTokenAccountAndMintTxs(connection, owner, payer);
+  const { createMintTx, createAssociatedTokenAccountTx, mintToTx } =
+    await prepareTokenAccountAndMintTxs(connection, owner, payer, mint);
 
   const metadataPDA = findMetadataPda(mint.publicKey);
   const editionPDA = findMasterEditionV2Pda(mint.publicKey);
 
-  const {
-    name,
-    symbol,
-    seller_fee_basis_points,
-    properties: { creators },
-  } = await lookup(uri);
+  const { name, symbol, uri, sellerFeeBasisPoints, creators, collection } =
+    metaJSON;
 
   const creatorsData = creators.reduce<Creator[]>(
     (memo, { address, share }) => {
@@ -133,12 +137,12 @@ export const getNFTMintTxs = async (
     name,
     symbol,
     uri,
-    sellerFeeBasisPoints: seller_fee_basis_points,
+    sellerFeeBasisPoints,
     creators: creatorsData,
-    collection: collectionKey
+    collection: collection
       ? {
           verified: false,
-          key: collectionKey,
+          key: new PublicKey(collection.key),
         }
       : null,
     uses: null,
@@ -190,15 +194,17 @@ export const getNFTMintTxs = async (
   );
 
   // 3. collection verify
-  if (collectionKey) {
-    const collectionPDA = findMetadataPda(collectionKey);
-    const collectioMasterEditionPDA = findMasterEditionV2Pda(collectionKey);
+  if (metadataData.collection) {
+    const collectionPDA = findMetadataPda(metadataData.collection.key);
+    const collectioMasterEditionPDA = findMasterEditionV2Pda(
+      metadataData.collection.key,
+    );
     const verifyCollectionTx = new Transaction().add(
       createVerifyCollectionInstruction({
         metadata: metadataPDA,
         collectionAuthority: owner,
         payer: payer.publicKey,
-        collectionMint: collectionKey,
+        collectionMint: metadataData.collection.key,
         collection: collectionPDA,
         collectionMasterEditionAccount: collectioMasterEditionPDA,
       }),
@@ -206,8 +212,5 @@ export const getNFTMintTxs = async (
     txs.push(verifyCollectionTx);
   }
 
-  return {
-    mint,
-    txs,
-  };
+  return txs;
 };

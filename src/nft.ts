@@ -5,6 +5,7 @@ import {
   getBurnTxs,
   signAndEncodeTransaction,
   getNFTMintTxs,
+  MetadataJson,
 } from './utils';
 
 // ==========================================================================
@@ -23,16 +24,16 @@ export const getMintTxAndSinger = async (
   connection: Connection,
   payer: Keypair,
   destination: PublicKey,
-  uri: string,
-  collectionKey?: PublicKey,
+  metaJSON: MetadataJson,
+  mint: Keypair,
 ) => {
   // 1. get all transactions for nft mint
-  const { mint, txs } = await getNFTMintTxs(
+  const txs = await getNFTMintTxs(
     connection,
     payer,
     destination,
-    uri,
-    collectionKey,
+    metaJSON,
+    mint,
   );
   return { mint, txs, signers: [payer, mint] };
 };
@@ -49,15 +50,15 @@ export const mint = async (
   connection: Connection,
   payer: Keypair,
   destination: PublicKey,
-  uri: string,
-  collectionKey?: PublicKey,
+  metaJSON: MetadataJson,
+  nftMint = Keypair.generate(),
 ) => {
   const { mint, txs, signers } = await getMintTxAndSinger(
     connection,
     payer,
     destination,
-    uri,
-    collectionKey,
+    metaJSON,
+    nftMint,
   );
   const encodedTx = await signAndEncodeTransaction(connection, txs, signers);
   console.log(
@@ -74,25 +75,26 @@ export const mint = async (
  * @param {Object[]}list
  * @param list[].payer Fee payer
  * @param list[].destination The address which NFT mint to
- * @param list[].uri NFT metadata uri
+ * @param list[].metaJSON NFT metadata
  * @param showLog
  * @returns
  */
 export const batchMint = async (
   connection: Connection,
-  list: { payer: Keypair; destination: PublicKey; uri: string }[],
+  list: { payer: Keypair; destination: PublicKey; metaJSON: MetadataJson }[],
   showLog = true,
 ) => {
   const mintList: string[] = [];
   const txList: Transaction[] = [];
   const signerList: Keypair[] = [];
-  for (const { payer, destination, uri } of list) {
+  for (const { payer, destination, metaJSON } of list) {
     // 1. get all transactions for nft mint
     const { mint, txs, signers } = await getMintTxAndSinger(
       connection,
       payer,
       destination,
-      uri,
+      metaJSON,
+      Keypair.generate(),
     );
     txList.push(...txs);
     signerList.push(...signers);
