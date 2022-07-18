@@ -1,0 +1,29 @@
+{
+  "name": "Chair Collection",
+  "symbol": "",
+  "description": "NFT Chair Collection, represent all chairs in Zclub",
+  "seller_fee_basis_points": 400,
+  "image": "https://zclub.app/static/img_token_earnning.7fef9eb4.svg",
+  "external_url": "https://zclub.app",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://zclub.app/static/img_token_earnning.7fef9eb4.svg",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "ZCLUB6ueX9iALVEeNPVWQyrgTqvWAHcxozJP2ea2YcC",
+        "share": 100
+      }
+    ]
+  },
+  "attributes": [
+    {
+      "trait_type": "Chair type",
+      "value": "Collection"
+    }
+  ]
+}

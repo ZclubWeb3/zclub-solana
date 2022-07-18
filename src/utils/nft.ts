@@ -2,21 +2,25 @@
  * This file refers to metaplex/js and encapsulats the @metaplex-foundation.
  * We don't send the transction immediately in our logical, so we can't use the metaplex/js directly.
  */
-
 import { PublicKey, Connection, Keypair, Transaction } from '@solana/web3.js';
 import {
   getAssociatedTokenAddress,
   createAssociatedTokenAccountInstruction,
 } from '@solana/spl-token';
-import BN from 'bn.js';
 import {
-  CreateMasterEdition,
-  CreateMetadata,
+  createCreateMasterEditionV3Instruction,
+  DataV2,
   Creator,
-  MasterEdition,
-  Metadata,
-  MetadataDataData,
+  createCreateMetadataAccountV2Instruction,
+  createVerifyCollectionInstruction,
 } from '@metaplex-foundation/mpl-token-metadata';
+import {
+  findMetadataPda,
+  findEditionPda,
+  findMasterEditionV2Pda,
+} from '@metaplex-foundation/js';
+import { config } from '@metaplex-foundation/mpl-core';
+import { MetaplexProgram } from '@metaplex-foundation/mpl-metaplex';
 
 import { lookup } from '../adaptor/metaplex';
 import { getCreateMintTx, getMintToTx } from './public';
@@ -83,7 +87,7 @@ export const prepareTokenAccountAndMintTxs = async (
  * @param payer tx payer
  * @param owner nft owenr
  * @param uri the uri of the metadata
- * @param maxSupply default = 1
+ * @param collectionKey the collection mint of this nft.
  * @returns
  */
 export const getNFTMintTxs = async (
@@ -91,13 +95,14 @@ export const getNFTMintTxs = async (
   payer: Keypair,
   owner: PublicKey,
   uri: string,
-  maxSupply = 1,
+  collectionKey?: PublicKey,
 ) => {
+  const txs: Transaction[] = [];
   const { mint, createMintTx, createAssociatedTokenAccountTx, mintToTx } =
     await prepareTokenAccountAndMintTxs(connection, owner, payer);
 
-  const metadataPDA = await Metadata.getPDA(mint.publicKey);
-  const editionPDA = await MasterEdition.getPDA(mint.publicKey);
+  const metadataPDA = findMetadataPda(mint.publicKey);
+  const editionPDA = findMasterEditionV2Pda(mint.publicKey);
 
   const {
     name,
@@ -110,11 +115,11 @@ export const getNFTMintTxs = async (
     (memo, { address, share }) => {
       const verified = address === owner.toString();
 
-      const creator = new Creator({
-        address,
+      const creator: Creator = {
+        address: new PublicKey(address),
         share,
         verified,
-      });
+      };
 
       memo = [...memo, creator];
 
@@ -123,47 +128,86 @@ export const getNFTMintTxs = async (
     [],
   );
 
-  const metadataData = new MetadataDataData({
+  // 1. metadata
+  const metadataData: DataV2 = {
     name,
     symbol,
     uri,
     sellerFeeBasisPoints: seller_fee_basis_points,
     creators: creatorsData,
-  });
-
-  const createMetadataTx = new CreateMetadata(
-    {
-      feePayer: payer.publicKey,
-    },
-    {
-      metadata: metadataPDA,
-      metadataData,
-      updateAuthority: owner,
-      mint: mint.publicKey,
-      mintAuthority: owner,
-    },
+    collection: collectionKey
+      ? {
+          verified: false,
+          key: collectionKey,
+        }
+      : null,
+    uses: null,
+  };
+  const createMetadataTx = new Transaction().add(
+    createCreateMetadataAccountV2Instruction(
+      {
+        metadata: metadataPDA,
+        mint: mint.publicKey,
+        mintAuthority: owner,
+        payer: payer.publicKey,
+        updateAuthority: owner,
+      },
+      {
+        createMetadataAccountArgsV2: {
+          data: metadataData,
+          isMutable: true,
+        },
+      },
+    ),
   );
 
-  const masterEditionTx = new CreateMasterEdition(
-    { feePayer: payer.publicKey },
-    {
-      edition: editionPDA,
-      metadata: metadataPDA,
-      updateAuthority: owner,
-      mint: mint.publicKey,
-      mintAuthority: owner,
-      maxSupply: maxSupply || maxSupply === 0 ? new BN(maxSupply) : undefined,
-    },
+  // 2. master edition
+  const masterEditionTx = new Transaction().add(
+    createCreateMasterEditionV3Instruction(
+      {
+        edition: editionPDA,
+        mint: mint.publicKey,
+        updateAuthority: owner,
+        mintAuthority: owner,
+        payer: payer.publicKey,
+        metadata: metadataPDA,
+      },
+      {
+        createMasterEditionArgs: {
+          maxSupply: 0,
+        },
+      },
+    ),
   );
-
-  return {
-    mint,
-    txs: [
+  txs.push(
+    ...[
       createMintTx,
       createMetadataTx,
       createAssociatedTokenAccountTx,
       mintToTx,
       masterEditionTx,
     ],
+  );
+
+  // 3. collection verify
+  if (collectionKey) {
+    const collectionPDA = findMetadataPda(collectionKey);
+    const collectioMasterEditionPDA = findMasterEditionV2Pda(collectionKey);
+    const verifyCollectionTx = new Transaction().add(
+      createVerifyCollectionInstruction({
+        metadata: metadataPDA,
+        collectionAuthority: owner,
+        payer: payer.publicKey,
+        collectionMint: collectionKey,
+        collection: collectionPDA,
+        collectionMasterEditionAccount: collectioMasterEditionPDA,
+      }),
+    );
+    txs.push(verifyCollectionTx);
+  }
+
+  return {
+    mint,
+    txs,
   };
 };

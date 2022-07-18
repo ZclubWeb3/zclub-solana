@@ -1,8 +1,4 @@
 import { PublicKey, Keypair, Connection, Transaction } from '@solana/web3.js';
-import {
-  Metadata,
-  MetadataDataData,
-} from '@metaplex-foundation/mpl-token-metadata';
 
 import {
   getSPLTransferTxs,
@@ -28,6 +24,7 @@ export const getMintTxAndSinger = async (
   payer: Keypair,
   destination: PublicKey,
   uri: string,
+  collectionKey?: PublicKey,
 ) => {
   // 1. get all transactions for nft mint
   const { mint, txs } = await getNFTMintTxs(
@@ -35,6 +32,7 @@ export const getMintTxAndSinger = async (
     payer,
     destination,
     uri,
+    collectionKey,
   );
   return { mint, txs, signers: [payer, mint] };
 };
@@ -52,12 +50,14 @@ export const mint = async (
   payer: Keypair,
   destination: PublicKey,
   uri: string,
+  collectionKey?: PublicKey,
 ) => {
   const { mint, txs, signers } = await getMintTxAndSinger(
     connection,
     payer,
     destination,
     uri,
+    collectionKey,
   );
   const encodedTx = await signAndEncodeTransaction(connection, txs, signers);
   console.log(

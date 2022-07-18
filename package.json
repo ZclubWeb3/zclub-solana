@@ -19,6 +19,10 @@
   "license": "MIT",
   "dependencies": {
     "@babel/runtime": "^7.18.3",
+    "@metaplex-foundation/js": "^0.11.7",
+    "@metaplex-foundation/mpl-core": "^0.6.1",
+    "@metaplex-foundation/mpl-metaplex": "^0.0.5",
+    "@metaplex-foundation/mpl-token-metadata": "^2.2.1",
     "@metaplex/js": "^4.12.0",
     "@solana/spl-token": "^0.2.0",
     "@solana/web3.js": "^1.43.2"
