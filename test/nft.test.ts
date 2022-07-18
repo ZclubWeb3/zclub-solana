@@ -4,20 +4,20 @@ import http from 'http';
 
 import { NFT, SPL, signAndEncodeTransaction } from '../src';
 import JsonChair from './fixtures/json/chair.json';
-import JsonRoom from './fixtures/json/room.json';
+import JsonChairCollection from './fixtures/json/chair_collection.json';
 import { requestAirdrop, sleep } from './util';
 const mockServer = (creater: Web3.PublicKey) => {
   const app = express();
   const port = 3000;
 
-  app.get('/api/jsonroom', (req, res) => {
-    JsonRoom.properties.creators = [
+  app.get('/api/jsonchair_collection', (req, res) => {
+    JsonChairCollection.properties.creators = [
       {
         address: creater.toBase58(),
         share: 100,
       },
     ];
-    res.json(JsonRoom);
+    res.json(JsonChairCollection);
   });
 
   app.get('/api/jsonchair', (req, res) => {
@@ -37,12 +37,17 @@ const mockServer = (creater: Web3.PublicKey) => {
   return server;
 };
 
-const mintANFT = async (connection: Web3.Connection, keypair: Web3.Keypair) => {
+const mintANFT = async (
+  connection: Web3.Connection,
+  keypair: Web3.Keypair,
+  collectionKey?: Web3.PublicKey,
+) => {
   const { encodedSignature, mint } = await NFT.mint(
     connection,
     keypair,
     keypair.publicKey,
-    'http://127.0.0.1:3000/api/jsonchair',
+    `http://127.0.0.1:3000/api/jsonchair${collectionKey ? '' : '_collection'}`,
+    collectionKey,
   );
   await connection.confirmTransaction(
     await connection.sendEncodedTransaction(encodedSignature),
@@ -53,6 +58,7 @@ describe('NFT TEST', () => {
   let server: http.Server;
   let connection: Web3.Connection;
 
+  let collection_chair_address: Web3.PublicKey;
   let mint_chair_address_batch_test1: Web3.PublicKey;
   let mint_chair_address_batch_test2: Web3.PublicKey;
   let mint_chair_address_batch_test3: Web3.PublicKey;
@@ -70,13 +76,19 @@ describe('NFT TEST', () => {
     server = mockServer(keypair1.publicKey);
   });
 
-  test('mint chairs', async () => {
-    mint_chair_address_batch_test1 = await mintANFT(connection, keypair1);
-    mint_chair_address_batch_test2 = await mintANFT(connection, keypair1);
-    mint_chair_address_batch_test3 = await mintANFT(connection, keypair1);
-    mint_chair_address_batch_test4 = await mintANFT(connection, keypair1);
-    mint_chair_address_batch_test5 = await mintANFT(connection, keypair1);
-    mint_chair_address_batch_test6 = await mintANFT(connection, keypair1);
+  test('mint collection NFT', async () => {
+    console.log(keypair1.publicKey.toBase58());
+    collection_chair_address = await mintANFT(connection, keypair1);
+
+    console.log(collection_chair_address.toBase58());
+  });
+
+  test('mint chairs 1', async () => {
+    mint_chair_address_batch_test1 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
     expect(
       await SPL.getBalance(
         connection,
@@ -90,6 +102,45 @@ describe('NFT TEST', () => {
     );
     expect(allInfo[mint_chair_address_batch_test1.toBase58()]).toEqual(
       BigInt(1),
+    );
+  });
+
+  test('mint chairs 2-6', async () => {
+    mint_chair_address_batch_test2 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
+    mint_chair_address_batch_test3 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
+    mint_chair_address_batch_test4 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
+    mint_chair_address_batch_test5 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
+    mint_chair_address_batch_test6 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
+    expect(
+      await SPL.getBalance(
+        connection,
+        mint_chair_address_batch_test1,
+        keypair1.publicKey,
+      ),
+    ).toEqual(BigInt(1));
+    const allInfo = await SPL.getAllTokenBalance(
+      connection,
+      keypair1.publicKey,
     );
     expect(allInfo[mint_chair_address_batch_test2.toBase58()]).toEqual(
       BigInt(1),
@@ -260,12 +311,36 @@ describe('NFT TEST', () => {
   });
 
   test('batch burn & mint', async () => {
-    mint_chair_address_batch_test1 = await mintANFT(connection, keypair1);
-    mint_chair_address_batch_test2 = await mintANFT(connection, keypair1);
-    mint_chair_address_batch_test3 = await mintANFT(connection, keypair1);
-    mint_chair_address_batch_test4 = await mintANFT(connection, keypair1);
-    mint_chair_address_batch_test5 = await mintANFT(connection, keypair1);
-    mint_chair_address_batch_test6 = await mintANFT(connection, keypair1);
+    mint_chair_address_batch_test1 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
+    mint_chair_address_batch_test2 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
+    mint_chair_address_batch_test3 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
+    mint_chair_address_batch_test4 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
+    mint_chair_address_batch_test5 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
+    mint_chair_address_batch_test6 = await mintANFT(
+      connection,
+      keypair1,
+      collection_chair_address,
+    );
 
     const burnList = [
       {

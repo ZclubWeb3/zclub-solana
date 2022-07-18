@@ -155,3 +155,4 @@ Cargo.lock
 
 /es
 /lib
+/test/tmp

@@ -38,8 +38,14 @@ export declare type MetadataJson = {
   image: string;
   animation_url?: string;
   external_url?: string;
-  attributes?: MetadataJsonAttribute[];
-  collection?: MetadataJsonCollection;
+  attributes?: {
+    trait_type: string;
+    value: string;
+  }[];
+  collection?: {
+    verified: boolean;
+    key: string;
+  };
   properties: MetadataJsonProperties;
 };
 export declare type Optional<T, K extends keyof T> = Pick<Partial<T>, K> &

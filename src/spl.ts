@@ -5,6 +5,11 @@ import {
   TOKEN_PROGRAM_ID,
   AccountLayout,
 } from '@solana/spl-token';
+import {
+  DataV2,
+  createCreateMetadataAccountV2Instruction,
+} from '@metaplex-foundation/mpl-token-metadata';
+import { findMetadataPda } from '@metaplex-foundation/js';
 
 import {
   getCreateMintTx,
@@ -15,6 +20,95 @@ import {
   getMintToTx,
 } from './utils';
 
+/**
+ * issue spl token with amount and metadata
+ * @param connection
+ * @param payer
+ * @param owner
+ * @param mintKeypair
+ * @param decimals
+ * @param amount  if decimal is 9, amount 1,000,000,000 represents 1 really
+ * @param metadata
+ * @returns
+ */
+export const issueSPLToken = async (
+  connection: Connection,
+  payer: Keypair,
+  owner: Keypair,
+  mintKeypair: Keypair = Keypair.generate(),
+  decimals = 9,
+  amount: number | bigint,
+  metadata: { name: string; symbol: string; uri: string },
+) => {
+  const txList: Transaction[] = [];
+
+  // 1. create mint
+  const createMintTx = await getCreateMintTx(
+    connection,
+    payer,
+    owner.publicKey,
+    owner.publicKey,
+    decimals,
+    mintKeypair,
+  );
+  txList.push(createMintTx);
+
+  // 2. mint to
+  const { txs: mintTxs } = await getMintTxAndSigner(
+    connection,
+    payer,
+    owner,
+    mintKeypair.publicKey,
+    owner.publicKey,
+    amount,
+  );
+  txList.push(...mintTxs);
+
+  // 3. metadata
+  const metadataPDA = await findMetadataPda(mintKeypair.publicKey);
+  const tokenMetadata = {
+    ...metadata,
+    sellerFeeBasisPoints: 0,
+    creators: null,
+    collection: null,
+    uses: null,
+  } as DataV2;
+
+  txList.push(
+    new Transaction().add(
+      createCreateMetadataAccountV2Instruction(
+        {
+          metadata: metadataPDA,
+          mint: mintKeypair.publicKey,
+          mintAuthority: owner.publicKey,
+          payer: payer.publicKey,
+          updateAuthority: owner.publicKey,
+        },
+        {
+          createMetadataAccountArgsV2: {
+            data: tokenMetadata,
+            isMutable: true,
+          },
+        },
+      ),
+    ),
+  );
+
+  const encodedTx = await signAndEncodeTransaction(connection, txList, [
+    payer,
+    owner,
+    mintKeypair,
+  ]);
+
+  console.log(
+    `issueSPLToken(name=${metadata.name} symbol=${
+      metadata.symbol
+    } amount=${amount.toString()}): signature=${encodedTx.encodedSignature} }`,
+  );
+
+  return encodedTx;
+};
+
 // ==========================================================================
 // - MARK: create
 // ==========================================================================
@@ -24,14 +118,14 @@ import {
  * @param connection
  * @param payer Feepayer
  * @param owner Token Authority belongs to the owner
- * @param token_keypair  SPL Token Keypair, use to custom the mint address
+ * @param mintKeypair  SPL Token Keypair, use to custom the mint address
  * @returns
  */
 export const create = async (
   connection: Connection,
   payer: Keypair,
   owner: Keypair,
-  token_keypair: Keypair = Keypair.generate(),
+  mintKeypair: Keypair = Keypair.generate(),
 ) => {
   const createMintTx = await getCreateMintTx(
     connection,
@@ -39,21 +133,21 @@ export const create = async (
     owner.publicKey,
     owner.publicKey,
     9,
-    token_keypair,
+    mintKeypair,
   );
   const encodeTx = await signAndEncodeTransaction(
     connection,
     [createMintTx],
-    [payer, token_keypair],
+    [payer, mintKeypair],
   );
 
   console.log(
     `SPL Create: signature=${
       encodeTx.encodedSignature
-    } mint=${token_keypair.publicKey.toBase58()}`,
+    } mint=${mintKeypair.publicKey.toBase58()}`,
   );
   return {
-    mint: token_keypair.publicKey.toBase58(),
+    mint: mintKeypair.publicKey.toBase58(),
     ...encodeTx,
   };
 };
