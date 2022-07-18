@@ -20,14 +20,14 @@ describe('SPL TEST', () => {
   });
 
   test('create', async () => {
-    const { encodedSignature, mint, latestBlockInfo } = await SPL.create(
+    const { encodedSignature, mint, lastBlockInfo } = await SPL.create(
       connection,
       keypair1,
       keypair1,
     );
 
-    expect(latestBlockInfo?.blockhash).toBeDefined();
-    expect(latestBlockInfo?.lastValidBlockHeight).toBeDefined();
+    expect(lastBlockInfo?.blockhash).toBeDefined();
+    expect(lastBlockInfo?.lastValidBlockHeight).toBeDefined();
 
     await connection.confirmTransaction(
       await connection.sendEncodedTransaction(encodedSignature),
